@@ -676,12 +676,14 @@
            IMPORT FIREBASE MODULES (v12.6.0)
         --------------------------------------------------------- */
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+        import { initializeAppCheck, ReCaptchaV3Provider }
+            from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app-check.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
         import { getDatabase, ref, push, set }
             from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 
         /* ---------------------------------------------------------
-           FIREBASE CONFIG (YOUR SETTINGS)
+           FIREBASE CONFIG  
         --------------------------------------------------------- */
         const firebaseConfig = {
             apiKey: "AIzaSyDxlisLhQXHxqg4eL-ViOfK2drNCCrK8mA",
@@ -699,28 +701,38 @@
         --------------------------------------------------------- */
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
+
+        /* ---------------------------------------------------------
+           ENABLE APP CHECK  
+           Replace YOUR_RECAPTCHA_SITE_KEY below.
+        --------------------------------------------------------- */
+        const appCheck = initializeAppCheck(app, {
+            provider: new ReCaptchaV3Provider("6Ld6ehwsAAAAANFu9HpY2FqkpsX9z8Qint7_OkWG"),
+            isTokenAutoRefreshEnabled: true
+        });
+
+        /* ---------------------------------------------------------
+           CONNECT TO DATABASE
+        --------------------------------------------------------- */
         const db = getDatabase(app);
 
         /* ---------------------------------------------------------
            FORM SUBMISSION LOGIC
         --------------------------------------------------------- */
         document.getElementById("contact-form").addEventListener("submit", function (e) {
-            e.preventDefault(); // stop page reload
+            e.preventDefault();
 
-            // Extract form values
             const name = document.getElementById("contact-name").value.trim();
             const email = document.getElementById("contact-email").value.trim();
             const message = document.getElementById("contact-message").value.trim();
 
-            // Create database reference
             const submissionsRef = ref(db, "contact_submissions");
             const newEntry = push(submissionsRef);
 
-            // Save data
             set(newEntry, {
-                name: name,
-                email: email,
-                message: message,
+                name,
+                email,
+                message,
                 timestamp: new Date().toISOString()
             })
                 .then(() => {
@@ -729,11 +741,11 @@
                 })
                 .catch((error) => {
                     console.error("Error saving message:", error);
-                    alert("There was an error sending your message. Please try again.");
+                    alert("Failed to send message. Please try again later.");
                 });
-
         });
     </script>
+
 
 
 </body>
